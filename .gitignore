@@ -1,0 +1,11 @@
+# Rust
+target/
+
+# packaged plugin
+dist/
+
+# editors
+.idea/
+.vscode/
+*.swp
+.DS_Store

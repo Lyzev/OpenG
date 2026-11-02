@@ -1,0 +1,16 @@
+[package]
+name = "openg"
+version = "1.0.0"
+edition = "2024"
+license = "AGPL-3.0-only"
+
+[dependencies]
+openaction = "2.1"
+tokio = { version = "1.47", features = ["rt-multi-thread", "macros", "time", "fs", "sync"] }
+log = "0.4"
+simplelog = "0.12"
+serde = { version = "1.0", features = ["derive"] }
+base64 = "0.22"
+
+[dev-dependencies]
+serde_json = "1.0"

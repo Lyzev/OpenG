@@ -1,0 +1,30 @@
+{
+	"Name": "OpenG",
+	"Description": "Shows the battery level of a Logitech HID++ device",
+	"Author": "Lyzev",
+	"Version": "1.0.0",
+	"Category": "System Information",
+	"Icon": "battery",
+	"OS": [{ "Platform": "linux" }],
+	"CodePaths": {
+		"x86_64-unknown-linux-gnu": "openg-x86_64-unknown-linux-gnu",
+		"aarch64-unknown-linux-gnu": "openg-aarch64-unknown-linux-gnu"
+	},
+	"CodePathLin": "openg-x86_64-unknown-linux-gnu",
+	"PropertyInspectorPath": "pi/main.html",
+	"Actions": [
+		{
+			"UUID": "dev.lyzev.openg.battery",
+			"Name": "Battery",
+			"Icon": "battery",
+			"Tooltip": "Shows the battery level of a Logitech mouse or keyboard",
+			"Controllers": ["Keypad"],
+			"States": [
+				{
+					"Image": "battery",
+					"ShowTitle": false
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,64 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: rustfmt, clippy
+      - uses: swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - run: cargo fmt --check
+      - run: cargo clippy --target ${{ matrix.target }} --all-targets -- -D warnings
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
+      - run: |
+          mkdir -p artifacts
+          cp "target/${{ matrix.target }}/release/openg" "artifacts/openg-${{ matrix.target }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openg-${{ matrix.target }}
+          path: artifacts/openg-${{ matrix.target }}
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify version matches tag
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          cargo_version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n 1)"
+          manifest_version="$(python3 -c 'import json; print(json.load(open("assets/manifest.json"))["Version"])')"
+          [ "$cargo_version" = "$tag" ] || { echo "Cargo.toml version $cargo_version does not match tag $tag"; exit 1; }
+          [ "$manifest_version" = "$tag" ] || { echo "manifest Version $manifest_version does not match tag $tag"; exit 1; }
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - run: scripts/package.sh artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/dev.lyzev.openg.battery.streamDeckPlugin
+          generate_release_notes: true
